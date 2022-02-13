@@ -131,6 +131,11 @@ IP camera capable of outputting an MJPEG stream
      sudo service docker start
      sudo systemctl enable docker
      ```
+12. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI components.
+     ```
+     sudo yum install java-11-amazon-corretto-headless -y
+     ```
+     
 ### Setup Snowcone as an IoT Greengrass core device.
 This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-installation.html.
 
@@ -145,16 +150,13 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      unzip greengrass-nucleus-latest.zip -d GreengrassInstaller && 
      rm greengrass-nucleus-latest.zip
      ```
-3. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI components.
-     ```
-     sudo yum install java-11-amazon-corretto-headless -y
-     ```
-4. Provide the credentials to allow you to install AWS IoT Greengrass Core software. Replace the values below with your credentials.
+
+3. Provide the credentials to allow you to install AWS IoT Greengrass Core software. Replace the values below with your credentials.
      ```
      export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
      export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
      ```
-5. Run the AWS IoT Greengrass Core installer. Replace argument values in your command as follows.
+4. Run the AWS IoT Greengrass Core installer. Replace argument values in your command as follows.
      - `region`. The AWS Region in which to find or create resources. Example `us-east-1`.
      - `MyGreengrassCore`. The name of the AWS IoT thing for your Greengrass core device. Example `Snowcone88`.
      - `MyGreengrassCoreGroup`. The name of AWS IoT thing group for your Greengrass core device. Example `FaceDetectors`.
