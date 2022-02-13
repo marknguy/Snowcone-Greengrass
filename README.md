@@ -145,20 +145,19 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      unzip greengrass-nucleus-latest.zip -d GreengrassCore && 
      rm greengrass-nucleus-latest.zip
      ```
-3. Install the Java runtime.
+3. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI.
      ```
      sudo amazon-linux-extras install java-openjdk11
      ```
-4. Run the following commands to provide the credentials to the AWS IoT Greengrass Core software.
+4. Provide the credentials to allow you to install AWS IoT Greengrass Core software. Replace the values below with your credentials.
      ```
      export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
      export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
      ```
 5. Run the AWS IoT Greengrass Core installer. Replace argument values in your command as follows.
-     - GreengrassInstaller. The path to the folder where you unpacked the AWS IoT Greengrass Core software installer.
-     - `region`. The AWS Region in which to find or create resources.
-     - `MyGreengrassCore`. The name of the AWS IoT thing for your Greengrass core device. 
-     - `MyGreengrassCoreGroup`. The name of AWS IoT thing group for your Greengrass core device. 
+     - `region`. The AWS Region in which to find or create resources. Example `us-east-1`.
+     - `MyGreengrassCore`. The name of the AWS IoT thing for your Greengrass core device. Example `Snowcone88`.
+     - `MyGreengrassCoreGroup`. The name of AWS IoT thing group for your Greengrass core device. Example `FaceDetectors`.
      ```
      sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
        -jar ./GreengrassInstaller/lib/Greengrass.jar \
