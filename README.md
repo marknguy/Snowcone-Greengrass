@@ -14,7 +14,7 @@ IP camera capable of outputting an MJPEG stream
 ### Snowcone setup
 1. Deploy an Amazon Linux 2 instance. The instance type should be snc1.medium. 
 
-     (optional - requires AWS cli for the `aws ec2 ...` command)
+     (optional) - requires AWS cli for the `aws ec2 ...` command
    
       If you are setting up a long term demo, you can setup your instance to startup automatically after unlocking. The following autostart configuration sample works for Windows clients. Create a key pair in Opshub first if you don't already have one.
       First, create the launch template using aws cli. Make sure you replace `<ssh_key_name>` with your ssh key. Make sure you replace `<image_id>` with the image ID of your Amazon Linux 2 image. You can find the image ID using the command `aws ec2 describe-instances --endpoint http://192.168.26.89:8008 --profile snc89 --region snow`. It will look something like this: `s.ami-8144e2b13711e662b`. The endpoint is the IP address of your snowcone.
@@ -109,8 +109,15 @@ IP camera capable of outputting an MJPEG stream
      /dev/vdb        500G  8.1G  492G   2% /var/lib/docker
      ```
 10. (ignore if using DHCP) Update your DNS server if you are using static VNIs.
+     ```
+     sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf    
+     ```
+     Make the change persistent after reboot.
+     ```
+     sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf
+     ```
 
-10. Update your AL2 instnace.
+10. Update your AL2 instance.
 
      ```
      sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
@@ -124,3 +131,45 @@ IP camera capable of outputting an MJPEG stream
      sudo service docker start
      sudo systemctl enable docker
      ```
+### Setup Snowcone as an IoT Greengrass core device.
+This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-installation.html.
+
+1. Grant root user permission to run the AWS IoT Greengrass software. Modify root permission from `root ALL=(ALL) ALL` to `root ALL=(ALL:ALL) ALL` in `sudoers` config file.
+     ```
+     sudo sed -in 's/root\tALL=(ALL)/root\tALL=(ALL:ALL)/' /etc/sudoers
+     ```
+     
+2. Download the AWS IoT Greengrass core software.
+     ```
+     curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip -o greengrass-nucleus-latest.zip && 
+     unzip greengrass-nucleus-latest.zip -d GreengrassCore && 
+     rm greengrass-nucleus-latest.zip
+     ```
+3. Install the Java runtime.
+     ```
+     sudo amazon-linux-extras install java-openjdk11
+     ```
+4. Run the following commands to provide the credentials to the AWS IoT Greengrass Core software.
+     ```
+     export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+     export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+     ```
+5. Run the AWS IoT Greengrass Core installer. Replace argument values in your command as follows.
+     - GreengrassInstaller. The path to the folder where you unpacked the AWS IoT Greengrass Core software installer.
+     - `region`. The AWS Region in which to find or create resources.
+     - `MyGreengrassCore`. The name of the AWS IoT thing for your Greengrass core device. 
+     - `MyGreengrassCoreGroup`. The name of AWS IoT thing group for your Greengrass core device. 
+     ```
+     sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
+       -jar ./GreengrassInstaller/lib/Greengrass.jar \
+       --aws-region region \
+       --thing-name MyGreengrassCore \
+       --thing-group-name MyGreengrassCoreGroup \
+       --thing-policy-name GreengrassV2IoTThingPolicy \
+       --tes-role-name GreengrassV2TokenExchangeRole \
+       --tes-role-alias-name GreengrassCoreTokenExchangeRoleAlias \
+       --component-default-user ggc_user:ggc_group \
+       --provision true \
+       --setup-system-service true
+     ```
+     
