@@ -1,17 +1,17 @@
 # Snowcone-Greengrass
 AWS IoT Greengrass allows you to build, deploy, and manage device software to the Edge at-scale. In this demo, we show how IoT Greengrass manages an AI/ML model on Snowcone. Our AI/ML model detacts faces and draws rectangles around the eyes and face.
 
-###### Requirements
+### Requirements
 AWS Snowcone
 IP camera capable of outputting an MJPEG stream
 
-###### Assumptions
+### Assumptions
 1. The Snowcone was ordered with the AWS IoT Greengrass validated AMI (amzn2-ami-snow-family-hvm-2.0.20210219.0-x86_64-gp2-b7e7f8d2-1b9e-4774-a374-120e0cd85d5a).
 2. Familar with OpsHub and the SnowballEdge client. Both are installed on the user's computer. 
 3. The SnowballEdge client has been configured with a profile using the appropriate Snowcone credentials.
 
 
-###### Snowcone setup
+### Snowcone setup
 1. Deploy an Amazon Linux 2 instance. The instance type should be snc1.medium. 
 
      (optional - requires AWS cli for the `aws ec2 ...` command)
@@ -27,11 +27,100 @@ IP camera capable of outputting an MJPEG stream
       ```
       Reboot your snowcone and unlock it. A new Amazon Linux 2 image should be launched. This instance will autostart after reboot and unlocking.
    
-2. Using OpsHub, create two 1TB volumes. Attach these volumes to your AL2 instance with the following Volume Device Names
+2. Using OpsHub, create two 500GB volumes. Attach these volumes to your AL2 instance with the following Volume Device Names.
       
       `/dev/sdh`
       
       `/dev/sdi`
       
-3. dslakfj
-4. 
+3. (optional) Use the `lsblk` command to view your available disk devices and their mount points (if applicable) to help you determine the correct device name to use. Since these are two newly added volumes, they will be `vda` and `vdb`.
+
+     ```
+     [ec2-user@ComputerVision ~]$ lsblk
+     NAME     MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+     sda        8:0    0    8G  0 disk
+     ├─sda1     8:1    0    8G  0 part /
+     └─sda128 259:0    0    1M  0 part
+     vda      253:0    0  500G  0 disk
+     vdb      253:16   0  500G  0 disk
+     ```
+4. Create a file system of type xfs for each volume.
+
+     ```
+     sudo mkfs -t xfs /dev/vda
+     sudo mkfs -t xfs /dev/vdb
+     ```
+5. Create two directories that will be our mount point for our new volumes.
+     ```
+     sudo mkdir /greengrass
+     sudo mkdir /var/lib/docker
+     ```
+
+6. Mount the two new volumes at the newly created directories.
+     ```
+     sudo mount /dev/vda /greengrass
+     sudo mount /dev/vdb /var/lib/docker
+     ```
+     verify they are mounted
+     ```
+     [ec2-user@ComputerVision ~]$ lsblk
+     NAME     MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+     sda        8:0    0    8G  0 disk
+     ├─sda1     8:1    0    8G  0 part /
+     └─sda128 259:0    0    1M  0 part
+     vda      253:0    0  500G  0 disk /greengrass
+     vdb      253:16   0  500G  0 disk /var/lib/docker
+     ```
+7. Setup your automounts. This is done by editing the /etc/fstab.
+     First, backup your `fstab` file.
+     ```
+     sudo cp /etc/fstab /etc/fstab.orig
+     ```
+     Determine the UUID of your new volumes. Note the UUID of `dev/vda`and `dev/vdb`.
+     ```
+     [ec2-user@ComputerVision ~]$ sudo blkid
+     /dev/vda: UUID="f33b3c3d-2994-4674-8961-0e71e92f4421" TYPE="xfs"
+     /dev/vdb: UUID="b979cae9-8914-48b1-8a18-dfb773141d43" TYPE="xfs"
+     /dev/sda1: UUID="bc07e2f4-d5ff-494b-adf1-6f6da7608cd6" TYPE="xfs" PARTLABEL="Linux" PARTUUID="39cd914d-ca60-4f71-b1ca-a1d272387932"
+     /dev/sda128: PARTLABEL="BIOS Boot Partition" PARTUUID="0e19dd44-e595-4daf-8567-e1bb121dcb2a"
+     ```
+
+8. Modify the `etc/fstab` by adding two lines to automount the two new volumes. Make sure to use your UUIDs, not the ones in this example.
+     ```
+     sudo sed -i '$ a UUID=f33b3c3d-2994-4674-8961-0e71e92f4421     /greengrass xfs    defaults,nofail   0   2' /etc/fstab
+     sudo sed -i '$ a UUID=b979cae9-8914-48b1-8a18-dfb773141d43     /var/lib/docker xfs    defaults,nofail   0   2' /etc/fstab
+     ```
+9. Test your automounts.
+     ```
+     sudo umount /greengrass
+     sudo umount /var/lib/docker
+     sudo mount -a
+     ```
+     You should see `dev/vda` and `/dev/vdb` in the output of the `df -h` command.
+     ```
+     [ec2-user@ComputerVision ~]$ df -h
+     Filesystem      Size  Used Avail Use% Mounted on
+     devtmpfs        2.0G     0  2.0G   0% /dev
+     tmpfs           2.0G     0  2.0G   0% /dev/shm
+     tmpfs           2.0G  572K  2.0G   1% /run
+     tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+     /dev/sda1       8.0G  2.4G  5.7G  30% /
+     /dev/vda        500G  8.9G  491G   2% /greengrass
+     /dev/vdb        500G  8.1G  492G   2% /var/lib/docker
+     ```
+
+
+10. Update your AL2 instnace.
+
+     ```
+     sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
+     sudo yum update -y
+     ```
+     
+11. Install Docker.
+
+     ```
+     sudo amazon-linux-extras install docker -y 
+     sudo service docker start
+     sudo systemctl enable docker
+     ```
