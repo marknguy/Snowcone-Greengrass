@@ -142,7 +142,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
 2. Download the AWS IoT Greengrass core software.
      ```
      curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip -o greengrass-nucleus-latest.zip && 
-     unzip greengrass-nucleus-latest.zip -d GreengrassCore && 
+     unzip greengrass-nucleus-latest.zip -d GreengrassInstaller && 
      rm greengrass-nucleus-latest.zip
      ```
 3. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI components.
