@@ -174,3 +174,88 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
        --setup-system-service true
      ```
      
+### (althernative Easy method)
+
+1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Edit the 
+     ```
+     #!/bin/bash
+     sleep 90
+     sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
+     sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
+     sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
+     sudo yum update -y
+     curl -s https://snowball-client.s3.us-west-2.amazonaws.com/latest/snowball-client-linux.tar.gz -o sbe-client.tar.gz && 
+     tar -xf sbe-client.tar.gz
+     export SBE_CLI_PATH=/home/ec2-user/`tar tf sbe-client.tar.gz | head -n1`bin
+     mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
+
+
+     curl -s 'https://marknguyen.s3.us-east-1.amazonaws.com/JID9be928de-c731-4167-bf23-752c0ff463c2_manifest.bin?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEC4aCXVzLWVhc3QtMSJHMEUCIFSe8l8GHSMCkGNJ2FSKLegqTVpBcDHRWdiZ8NnZAxH1AiEAyz0wmKGPHKIXsVVMCCniX4M4%2BjapowISWBAWgMeOFHEq%2BwIIdxABGgw4OTAwMTY2NDA5MTUiDPZouBer8zau8hUgOCrYAhOrSJaGEk741z%2F0pXcfhreuVA%2FvMVHq%2BWeKBS41LDYtpfUm7R4UC89OufdQLc3YHCyiWaVgoPfaebkVnv%2Flm2EnaLbMmRMPF%2BchXguU%2BOKkRxUQxaAIP%2FcYGixacBUMA1LOsLyo7rVBRI72Fr9ZllEfsdAKmPeH5K%2Fr1xzykb%2Baoo9y%2BKO7LBRIOs7AvXBlVDFJkThxhRkexEYpF1frHWjUGcGGGwBwzsH%2FCRFPk%2BOsFlAIWFGsX1ctYXnMG1iobCecZXDKrua78PACzweLFCQr2Ltz8g8rlqs%2FU5Ot6dvOc%2Bhz6NWDwdYwa9RiUlXG2tSL%2F2raBfzOfMwor9DBgU6nYIW6bM4PL5DN6FHbCy1WubzDftYDKoQnxzYK1%2FF81eGbXW6eTL2OM%2FyL3qmKPbhLLO8SaZa2tnojSEa%2FciMgCbpfIvXI5FFEwL65bwX82XifMJeV%2Bn10MMiOpJAGOrMCbmuFu%2B4jBxFSvRhy7RJMlBHHZSlT6WJc1rfjToWyZrI93hol1xLFqoM345IniEi36Hq8jvW2ZJ8XhlxjXRy1rHLShPctu%2FfCgqme360%2FHRtC5WRUcCgSBI2WJa0w0lAGD0e3bBhELDvrZyAVWpd%2BXj4BkuAOVUnIuryeUj3Y2XgIiXVLZyUdly17MtIlYAyEikJun%2BpDYGCCSCewWrtEB58ofwcsh5xlOv0v0fYMYP%2FcubVKWnbV484JPbp762PAAK5SLCAIQum0eh3JNhJ%2Fcv46M2N1OBrbwPX804g2Uqqd4IeOjsVdmMutrvxslwpyLlVIjpikgPEDJ9su93FQl43Tr8y2G5Bv6IcWFIxYFQMvrlywP7Vpq8gQRs9%2BHs72Tm6IMYijXe29nwMQft1XfsAgfg%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220213T143532Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Credential=ASIA46OJAF6J3GS2IGWZ%2F20220213%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=91e7772f16038816a2e9d42b53bda36a55a5044e10adede9c3af7ce06999e76b' -o $HOME/.aws/snowball/config/mymanifest.bin
+
+
+     echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"JID9be928de-c731-4167-bf23-752c0ff463c2\",\"unlockCode\":\"cb587-0125d-caa70-87744-79015\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://192.168.26.89\"}}}" >> $HOME/.aws/snowball/config/snowball-edge.config
+
+
+     export SBE_ACCESS_KEY=`$SBE_CLI_PATH/snowballEdge list-access-keys --profile snc89 | grep AccessKeyIds | awk -F '"' '{print $4}'`
+
+     $SBE_CLI_PATH/snowballEdge get-secret-access-key --access-key-id $SBE_ACCESS_KEY --profile snc89 >> $HOME/.aws/credentials
+
+     export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://192.168.26.89:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+
+     export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://192.168.26.89:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+
+     export INSTANCE_ID=`curl http://169.254.169.254/latest/meta-data/instance-id`
+
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://192.168.26.89:8008 --profile snc89
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://192.168.26.89:8008 --profile snc89
+
+     sudo mkfs -t xfs /dev/vda
+     sudo mkfs -t xfs /dev/vdb
+
+     sudo mkdir /greengrass
+     sudo mkdir /var/lib/docker
+
+     export VDA_UUID=`sudo blkid | grep vda | awk -F '"' '{print $2}'`
+     export VDB_UUID=`sudo blkid | grep vdb | awk -F '"' '{print $2}'`
+
+     sudo sed -i "$ a UUID=$VDA_UUID     /greengrass xfs    defaults,nofail   0   2" /etc/fstab
+     sudo sed -i "$ a UUID=$VDB_UUID     /greengrass xfs    defaults,nofail   0   2" /etc/fstab
+
+     sudo mount -a
+
+     sudo amazon-linux-extras install docker -y 
+     sudo service docker start
+     sudo systemctl enable docker
+
+     sudo yum install java-11-amazon-corretto-headless -y
+
+     sudo sed -in 's/root\tALL=(ALL)/root\tALL=(ALL:ALL)/' /etc/sudoers
+
+     curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip -o greengrass-nucleus-latest.zip && 
+     unzip greengrass-nucleus-latest.zip -d GreengrassInstaller && 
+     rm greengrass-nucleus-latest.zip
+
+     export AWS_ACCESS_KEY_ID=AKIA46OJAF6J4EXAMPLE
+     export AWS_SECRET_ACCESS_KEY=438BPatRMGohOiuCho9A6gGBLvEXAMPLE
+
+     sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
+       -jar ./GreengrassInstaller/lib/Greengrass.jar \
+       --aws-region us-east-1 \
+       --thing-name SBE89 \
+       --thing-group-name FaceDetectors \
+       --thing-policy-name GreengrassV2IoTThingPolicy \
+       --tes-role-name GreengrassV2TokenExchangeRole \
+       --tes-role-alias-name GreengrassCoreTokenExchangeRoleAlias \
+       --component-default-user ggc_user:ggc_group \
+       --provision true \
+       --setup-system-service true
+     ```
+2. Create a VNI.
+     ```
+     snowballEdge create-virtual-network-interface --physical-network-interface-id s.ni-81de3334a74d29280 --ip-address-assignment STATIC --static-ip-address-configuration IpAddress=192.168.26.94,Netmask=255.255.255.0 --profile sbe89
+     ```
+3. Launch your EC2 instance
+     ```
+     export INSTANCE_ID=`aws ec2 run-instances --image-id s.ami-8144e2b13711e662b --count 1 --instance-type sbe-c.medium --key-name markngykp --user-data file://auto-build-iot-greengrass.txt --endpoint http://192.168.26.89:8008 --profile sbe89 --region snow | grep InstanceId | awk -F '"' '{print $4}'` &&
+     aws ec2 associate-address --instance-id $INSTANCE_ID --public-ip 192.168.26.94 --profile snowballEdge --endpoint http://192.168.26.89:8008 --region snow
+     ```
