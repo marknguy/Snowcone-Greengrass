@@ -108,7 +108,7 @@ IP camera capable of outputting an MJPEG stream
      /dev/vda        500G  8.9G  491G   2% /greengrass
      /dev/vdb        500G  8.1G  492G   2% /var/lib/docker
      ```
-
+10. (ignore if using DHCP) Update your DNS server if you are using static VNIs.
 
 10. Update your AL2 instnace.
 
