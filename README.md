@@ -145,9 +145,9 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      unzip greengrass-nucleus-latest.zip -d GreengrassCore && 
      rm greengrass-nucleus-latest.zip
      ```
-3. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI.
+3. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI components.
      ```
-     sudo amazon-linux-extras install java-openjdk11
+     sudo yum install java-11-amazon-corretto-headless -y
      ```
 4. Provide the credentials to allow you to install AWS IoT Greengrass Core software. Replace the values below with your credentials.
      ```
