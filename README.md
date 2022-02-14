@@ -264,6 +264,8 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
        --component-default-user ggc_user:ggc_group \
        --provision true \
        --setup-system-service true
+       
+       
      ```
 2. Create a VNI.
      ```
