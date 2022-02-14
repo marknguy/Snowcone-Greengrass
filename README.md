@@ -3,8 +3,8 @@ AWS IoT Greengrass allows you to build, deploy, and manage device software to th
 (contributions from Tim Wilhoit and Minh Bui. Thank you!)
 
 ### Requirements
--AWS Snowcone
--IP camera capable of outputting an MJPEG stream
+     - AWS Snowcone
+     - IP camera capable of outputting an MJPEG stream
 
 ### Assumptions
 1. The Snowcone was ordered with the AWS IoT Greengrass validated AMI (amzn2-ami-snow-family-hvm-2.0.20210219.0-x86_64-gp2-b7e7f8d2-1b9e-4774-a374-120e0cd85d5a).
