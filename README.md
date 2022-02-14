@@ -175,7 +175,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
        --setup-system-service true
      ```
      
-### (althernative Easy method)
+### (alternative Easy method)
 This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. 
 
 
