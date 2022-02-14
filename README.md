@@ -215,7 +215,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
 
      curl -s "$MANIFEST_URL" -o /home/ec2-user/.aws/snowball/config/mymanifest.bin
-     cp /home/ec2-user/.aws/snowball/config/mymanifest.bin /root/mymanifest.bin
+     cp /home/ec2-user/.aws/snowball/config/mymanifest.bin /root/.aws/snowball/config/mymanifest.bin
 
      echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"$SNOW_JOB_ID\",\"unlockCode\":\"$UNLOCK_CODE\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://$SNOW_IP\"}}}" >> /home/ec2-user/.aws/snowball/config/snowball-edge.config
 
