@@ -221,18 +221,18 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
 
      export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snowballEdge --endpoint http://$SNOW_IP:8008 --region snow | grep VolumeId | awk -F '"' '{print $4}'`
 
-     sleep 15
+     sleep 20
 
      export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snowballEdge --endpoint http://$SNOW_IP:8008 --region snow | grep VolumeId | awk -F '"' '{print $4}'`
 
-     sleep 15
+     sleep 20
 
      export INSTANCE_ID=`curl http://169.254.169.254/latest/meta-data/instance-id`
 
      aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
-     sleep 5
+     sleep 10
      aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
-     sleep 5
+     sleep 10
      sudo mkfs -t xfs /dev/vda
      sudo mkfs -t xfs /dev/vdb
 
@@ -240,6 +240,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      sudo mkdir /var/lib/docker
 
      sudo mount /dev/vda /greengrass
+     sleep 5
      sudo mount /dev/vdb /var/lib/docker
 
      export VDA_UUID=`sudo blkid | grep vda | awk -F '"' '{print $2}'`
