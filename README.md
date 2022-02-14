@@ -3,7 +3,7 @@ AWS IoT Greengrass allows you to build, deploy, and manage device software to th
 
 (contributions from Tim Wilhoit and Minh Bui. Thank you!)
 
-## Architectureal Overview
+## Architectural Overview
 ![Architectural Overview](GG-github.JPG)
 
 ### Requirements
