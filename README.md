@@ -204,7 +204,6 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      export MANIFEST_FILE=/home/ec2-user/.aws/snowball/config/mymanifest.bin
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
      sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
-     sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
 
      curl -s https://snowball-client.s3.us-west-2.amazonaws.com/latest/snowball-client-linux.tar.gz -o /home/ec2-user/sbe-client.tar.gz && cd /home/ec2-user &&
      tar -xf sbe-client.tar.gz
@@ -235,15 +234,17 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
 
      export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snowballEdge --endpoint http://$SNOW_IP:8008 --region snow | grep VolumeId | awk -F '"' '{print $4}'`
 
-     sleep 20
+     sleep 30
 
      export INSTANCE_ID=`curl http://169.254.169.254/latest/meta-data/instance-id`
 
      aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
-     sleep 10
+     sleep 20
      aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
-     sleep 10
+     sleep 20
+     
      sudo mkfs -t xfs /dev/vda
+     sleep 10
      sudo mkfs -t xfs /dev/vdb
 
      sudo mkdir /greengrass
@@ -259,6 +260,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      sudo sed -i "$ a UUID=$VDA_UUID     /greengrass xfs    defaults,nofail   0   2" /etc/fstab
      sudo sed -i "$ a UUID=$VDB_UUID     /var/lib/docker xfs    defaults,nofail   0   2" /etc/fstab
 
+     sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
      sudo yum update -y
      sudo amazon-linux-extras install docker -y 
      sudo service docker start
