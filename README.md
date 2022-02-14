@@ -267,12 +267,13 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
        
        
      ```
-2. Create a VNI.
+2. Create a VNI. 
      ```
-     snowballEdge create-virtual-network-interface --physical-network-interface-id s.ni-81de3334a74d29280 --ip-address-assignment STATIC --static-ip-address-configuration IpAddress=192.168.26.94,Netmask=255.255.255.0 --profile sbe89
+     export EC2_IP_ADDRESS=`snowballEdge create-virtual-network-interface --physical-network-interface-id s.ni-81de3334a74d29280 --ip-address-assignment DHCP --profile sbe89 | grep \"IpAddress\" | awk -F '"' '{print $4}'`
      ```
 3. Launch your EC2 instance
      ```
-     export INSTANCE_ID=`aws ec2 run-instances --image-id s.ami-8144e2b13711e662b --count 1 --instance-type sbe-c.medium --key-name markngykp --user-data file://auto-build-iot-greengrass.txt --endpoint http://192.168.26.89:8008 --profile sbe89 --region snow | grep InstanceId | awk -F '"' '{print $4}'` &&
-     aws ec2 associate-address --instance-id $INSTANCE_ID --public-ip 192.168.26.94 --profile snowballEdge --endpoint http://192.168.26.89:8008 --region snow
+     export INSTANCE_ID=`aws ec2 run-instances --image-id s.ami-8144e2b13711e662b --count 1 --instance-type sbe-c.medium --key-name markngykp --user-data file://AL2_IOT_userdata.txt --endpoint http://192.168.26.89:8008 --profile sbe89 --region snow | grep InstanceId | awk -F '"' '{print $4}'` &&
+     sleep 60 &&
+     aws ec2 associate-address --instance-id $INSTANCE_ID --public-ip $EC2_IP_ADDRESS --profile sbe89 --endpoint http://192.168.26.89:8008 --region snow
      ```
