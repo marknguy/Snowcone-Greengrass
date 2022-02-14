@@ -175,11 +175,32 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
      
 ### (althernative Easy method)
+This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. 
 
-1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Edit the 
+
+1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Replace the following parameters appropriately.
+     - `<presigned URL of manifest file>` Upload your manifest file to S3 and generate a presigned URL. This can be created within the S3 console.
+     - `<snow_job_id>` This is the snow job id. Hint: same as the manifest file minus the _manifest.bin.
+     - `<unlock_code>` Unlock code of the SBE.
+     - `<ip_address_of_snow>` IP address of Snowcone.
+     - `<aws_region>` AWS Region. Example: us-east-1.
+     - `<iot_thing_name>` Thing name. Example: snowcone88.
+     - `<thing-group-name>` Thing group. Example: FaceDetectors.
+     - `<aws_access_key_id>` Access key ID from Region. Example: AKIA46OJAF6J4EXAMPLE
+     - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
      ```
      #!/bin/bash
      sleep 90
+     export MANIFEST_URL="<presigned URL of manifest file>"
+     export UNLOCK_CODE=<unlock_code>
+     export SNOW_JOB_ID=<snow_job_id>
+     export SNOW_IP=<ip_address_of_snow>
+     export AWS_REGION=<aws_region>
+     export IOT_THING_NAME=<iot_thing_name>
+     export THING_GROUP=<thing-group-name>
+     export AWS_ACCESS_KEY_ID=<aws_access_key_id>
+     export AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
+
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
      sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
      sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
@@ -189,25 +210,22 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      export SBE_CLI_PATH=/home/ec2-user/`tar tf sbe-client.tar.gz | head -n1`bin
      mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
 
+     curl -s "$MANIFEST_URL" -o $HOME/.aws/snowball/config/mymanifest.bin
 
-     curl -s 'https://marknguyen.s3.us-east-1.amazonaws.com/JID9be928de-c731-4167-bf23-752c0ff463c2_manifest.bin?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEC4aCXVzLWVhc3QtMSJHMEUCIFSe8l8GHSMCkGNJ2FSKLegqTVpBcDHRWdiZ8NnZAxH1AiEAyz0wmKGPHKIXsVVMCCniX4M4%2BjapowISWBAWgMeOFHEq%2BwIIdxABGgw4OTAwMTY2NDA5MTUiDPZouBer8zau8hUgOCrYAhOrSJaGEk741z%2F0pXcfhreuVA%2FvMVHq%2BWeKBS41LDYtpfUm7R4UC89OufdQLc3YHCyiWaVgoPfaebkVnv%2Flm2EnaLbMmRMPF%2BchXguU%2BOKkRxUQxaAIP%2FcYGixacBUMA1LOsLyo7rVBRI72Fr9ZllEfsdAKmPeH5K%2Fr1xzykb%2Baoo9y%2BKO7LBRIOs7AvXBlVDFJkThxhRkexEYpF1frHWjUGcGGGwBwzsH%2FCRFPk%2BOsFlAIWFGsX1ctYXnMG1iobCecZXDKrua78PACzweLFCQr2Ltz8g8rlqs%2FU5Ot6dvOc%2Bhz6NWDwdYwa9RiUlXG2tSL%2F2raBfzOfMwor9DBgU6nYIW6bM4PL5DN6FHbCy1WubzDftYDKoQnxzYK1%2FF81eGbXW6eTL2OM%2FyL3qmKPbhLLO8SaZa2tnojSEa%2FciMgCbpfIvXI5FFEwL65bwX82XifMJeV%2Bn10MMiOpJAGOrMCbmuFu%2B4jBxFSvRhy7RJMlBHHZSlT6WJc1rfjToWyZrI93hol1xLFqoM345IniEi36Hq8jvW2ZJ8XhlxjXRy1rHLShPctu%2FfCgqme360%2FHRtC5WRUcCgSBI2WJa0w0lAGD0e3bBhELDvrZyAVWpd%2BXj4BkuAOVUnIuryeUj3Y2XgIiXVLZyUdly17MtIlYAyEikJun%2BpDYGCCSCewWrtEB58ofwcsh5xlOv0v0fYMYP%2FcubVKWnbV484JPbp762PAAK5SLCAIQum0eh3JNhJ%2Fcv46M2N1OBrbwPX804g2Uqqd4IeOjsVdmMutrvxslwpyLlVIjpikgPEDJ9su93FQl43Tr8y2G5Bv6IcWFIxYFQMvrlywP7Vpq8gQRs9%2BHs72Tm6IMYijXe29nwMQft1XfsAgfg%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220213T143532Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Credential=ASIA46OJAF6J3GS2IGWZ%2F20220213%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=91e7772f16038816a2e9d42b53bda36a55a5044e10adede9c3af7ce06999e76b' -o $HOME/.aws/snowball/config/mymanifest.bin
-
-
-     echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"JID9be928de-c731-4167-bf23-752c0ff463c2\",\"unlockCode\":\"cb587-0125d-caa70-87744-79015\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://192.168.26.89\"}}}" >> $HOME/.aws/snowball/config/snowball-edge.config
-
+     echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"$SNOW_JOB_ID\",\"unlockCode\":\"$UNLOCK_CODE\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://$SNOW_IP\"}}}" >> $HOME/.aws/snowball/config/snowball-edge.config
 
      export SBE_ACCESS_KEY=`$SBE_CLI_PATH/snowballEdge list-access-keys --profile snc89 | grep AccessKeyIds | awk -F '"' '{print $4}'`
 
      $SBE_CLI_PATH/snowballEdge get-secret-access-key --access-key-id $SBE_ACCESS_KEY --profile snc89 >> $HOME/.aws/credentials
 
-     export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://192.168.26.89:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+     export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://$SNOW_IP:8008 | grep VolumeId | awk -F '"' '{print $4}'`
 
-     export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://192.168.26.89:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+     export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://$SNOW_IP:8008 | grep VolumeId | awk -F '"' '{print $4}'`
 
      export INSTANCE_ID=`curl http://169.254.169.254/latest/meta-data/instance-id`
 
-     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://192.168.26.89:8008 --profile snc89
-     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://192.168.26.89:8008 --profile snc89
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://$SNOW_IP:8008 --profile snc89
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://$SNOW_IP:8008 --profile snc89
 
      sudo mkfs -t xfs /dev/vda
      sudo mkfs -t xfs /dev/vdb
@@ -235,14 +253,11 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      unzip greengrass-nucleus-latest.zip -d GreengrassInstaller && 
      rm greengrass-nucleus-latest.zip
 
-     export AWS_ACCESS_KEY_ID=AKIA46OJAF6J4EXAMPLE
-     export AWS_SECRET_ACCESS_KEY=438BPatRMGohOiuCho9A6gGBLvEXAMPLE
-
      sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE \
        -jar ./GreengrassInstaller/lib/Greengrass.jar \
-       --aws-region us-east-1 \
-       --thing-name SBE89 \
-       --thing-group-name FaceDetectors \
+       --aws-region $AWS_REGION \
+       --thing-name $IOT_THING_NAME \
+       --thing-group-name $THING_GROUP \
        --thing-policy-name GreengrassV2IoTThingPolicy \
        --tes-role-name GreengrassV2TokenExchangeRole \
        --tes-role-alias-name GreengrassCoreTokenExchangeRoleAlias \
