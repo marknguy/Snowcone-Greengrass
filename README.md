@@ -181,9 +181,9 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
 
 1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Replace the following parameters appropriately.
      - `<presigned URL of manifest file>` Upload your manifest file to S3 and generate a presigned URL. This can be created within the S3 console.
-     - `<snow_job_id>` This is the snow job id. Hint: same as the manifest file minus the _manifest.bin.
-     - `<unlock_code>` Unlock code of the Snow device.
-     - `<ip_address_of_snow>` IP address of Snow device.
+     - `<snow_job_id>` This is the snow job id. Hint: same as the manifest file minus the _manifest.bin_. Ex: JID9be928de-c731-4167-bf23-752c0ffse8sde
+     - `<unlock_code>` Unlock code of the Snow device. Example: cb587-0125d-caa70-87744-47382
+     - `<ip_address_of_snow>` IP address of Snow device. Example: 192.168.26.89
      - `<aws_region>` AWS Region. Example: us-east-1.
      - `<iot_thing_name>` Thing name. Example: snowcone88.
      - `<thing-group-name>` Thing group. Example: FaceDetectors.
@@ -191,6 +191,16 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
   
      ```
+     export MANIFEST_URL="<presigned URL of manifest file>"
+     export UNLOCK_CODE=<unlock_code>
+     export SNOW_JOB_ID=<snow_job_id>
+     export SNOW_IP=<ip_address_of_snow>
+     export AWS_REGION=<aws_region>
+     export IOT_THING_NAME=<iot_thing_name>
+     export THING_GROUP=<thing-group-name>
+     export AWS_ACCESS_KEY_ID=<aws_access_key_id>
+     export AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
+     
      export MANIFEST_FILE=/home/ec2-user/.aws/snowball/config/mymanifest.bin
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
      sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
