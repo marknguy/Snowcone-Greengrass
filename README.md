@@ -1,5 +1,6 @@
 # Snowcone-Greengrass
 AWS IoT Greengrass allows you to build, deploy, and manage device software to the Edge at-scale. In this demo, we show how IoT Greengrass manages an AI/ML model on Snowcone. Our AI/ML model detacts faces and draws rectangles around the eyes and face.
+(contributions from Tim Wilhoit and Minh Bui. Thank you!)
 
 ### Requirements
 AWS Snowcone
@@ -181,66 +182,73 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
 1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Replace the following parameters appropriately.
      - `<presigned URL of manifest file>` Upload your manifest file to S3 and generate a presigned URL. This can be created within the S3 console.
      - `<snow_job_id>` This is the snow job id. Hint: same as the manifest file minus the _manifest.bin.
-     - `<unlock_code>` Unlock code of the SBE.
-     - `<ip_address_of_snow>` IP address of Snowcone.
+     - `<unlock_code>` Unlock code of the Snow device.
+     - `<ip_address_of_snow>` IP address of Snow device.
      - `<aws_region>` AWS Region. Example: us-east-1.
      - `<iot_thing_name>` Thing name. Example: snowcone88.
      - `<thing-group-name>` Thing group. Example: FaceDetectors.
      - `<aws_access_key_id>` Access key ID from Region. Example: AKIA46OJAF6J4EXAMPLE
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
+  
      ```
-     #!/bin/bash
-     sleep 90
-     export MANIFEST_URL="<presigned URL of manifest file>"
-     export UNLOCK_CODE=<unlock_code>
-     export SNOW_JOB_ID=<snow_job_id>
-     export SNOW_IP=<ip_address_of_snow>
-     export AWS_REGION=<aws_region>
-     export IOT_THING_NAME=<iot_thing_name>
-     export THING_GROUP=<thing-group-name>
-     export AWS_ACCESS_KEY_ID=<aws_access_key_id>
-     export AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
-
+     export MANIFEST_FILE=/home/ec2-user/.aws/snowball/config/mymanifest.bin
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
      sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
      sudo sed -i '$ a install_optional_items+=" grep "' /etc/dracut.conf.d/ec2.conf
-     sudo yum update -y
-     curl -s https://snowball-client.s3.us-west-2.amazonaws.com/latest/snowball-client-linux.tar.gz -o sbe-client.tar.gz && 
+
+     curl -s https://snowball-client.s3.us-west-2.amazonaws.com/latest/snowball-client-linux.tar.gz -o /home/ec2-user/sbe-client.tar.gz && cd /home/ec2-user &&
      tar -xf sbe-client.tar.gz
      export SBE_CLI_PATH=/home/ec2-user/`tar tf sbe-client.tar.gz | head -n1`bin
+
+     mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
+     cd /root
      mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
 
-     curl -s "$MANIFEST_URL" -o $HOME/.aws/snowball/config/mymanifest.bin
+     curl -s "$MANIFEST_URL" -o /home/ec2-user/.aws/snowball/config/mymanifest.bin
+     cp /home/ec2-user/.aws/snowball/config/mymanifest.bin /root/mymanifest.bin
 
-     echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"$SNOW_JOB_ID\",\"unlockCode\":\"$UNLOCK_CODE\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://$SNOW_IP\"}}}" >> $HOME/.aws/snowball/config/snowball-edge.config
+     echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"$SNOW_JOB_ID\",\"unlockCode\":\"$UNLOCK_CODE\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://$SNOW_IP\"}}}" >> /home/ec2-user/.aws/snowball/config/snowball-edge.config
 
-     export SBE_ACCESS_KEY=`$SBE_CLI_PATH/snowballEdge list-access-keys --profile snc89 | grep AccessKeyIds | awk -F '"' '{print $4}'`
+     cp /home/ec2-user/.aws/snowball/config/snowball-edge.config /root/.aws/snowball/config/snowball-edge.config
 
-     $SBE_CLI_PATH/snowballEdge get-secret-access-key --access-key-id $SBE_ACCESS_KEY --profile snc89 >> $HOME/.aws/credentials
+     export SBE_ACCESS_KEY=`$SBE_CLI_PATH/snowballEdge list-access-keys --manifest-file $MANIFEST_FILE --unlock-code $UNLOCK_CODE --endpoint https://$SNOW_IP | grep AccessKeyIds | awk -F '"' '{print $4}'`
 
-     export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://$SNOW_IP:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+     $SBE_CLI_PATH/snowballEdge get-secret-access-key --access-key-id $SBE_ACCESS_KEY --manifest-file $MANIFEST_FILE --unlock-code $UNLOCK_CODE --endpoint https://$SNOW_IP >> /home/ec2-user/.aws/credentials
 
-     export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snc89 --endpoint http://$SNOW_IP:8008 | grep VolumeId | awk -F '"' '{print $4}'`
+     cp /home/ec2-user/.aws/credentials /root/.aws/credentials
+
+     sudo chown -R ec2-user:ec2-user /home/ec2-user
+
+     export GREENGRASS_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snowballEdge --endpoint http://$SNOW_IP:8008 --region snow | grep VolumeId | awk -F '"' '{print $4}'`
+
+     sleep 15
+
+     export DOCKER_VOLUME=`aws ec2 create-volume --availability-zone snow --volume-type "sbp1" --size 500 --profile snowballEdge --endpoint http://$SNOW_IP:8008 --region snow | grep VolumeId | awk -F '"' '{print $4}'`
+
+     sleep 15
 
      export INSTANCE_ID=`curl http://169.254.169.254/latest/meta-data/instance-id`
 
-     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://$SNOW_IP:8008 --profile snc89
-     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://$SNOW_IP:8008 --profile snc89
-
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $GREENGRASS_VOLUME --device /dev/sdh --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
+     sleep 5
+     aws ec2 attach-volume --instance-id $INSTANCE_ID --volume-id $DOCKER_VOLUME --device /dev/sdi --region snow --endpoint http://$SNOW_IP:8008 --profile snowballEdge
+     sleep 5
      sudo mkfs -t xfs /dev/vda
      sudo mkfs -t xfs /dev/vdb
 
      sudo mkdir /greengrass
      sudo mkdir /var/lib/docker
 
+     sudo mount /dev/vda /greengrass
+     sudo mount /dev/vdb /var/lib/docker
+
      export VDA_UUID=`sudo blkid | grep vda | awk -F '"' '{print $2}'`
      export VDB_UUID=`sudo blkid | grep vdb | awk -F '"' '{print $2}'`
 
      sudo sed -i "$ a UUID=$VDA_UUID     /greengrass xfs    defaults,nofail   0   2" /etc/fstab
-     sudo sed -i "$ a UUID=$VDB_UUID     /greengrass xfs    defaults,nofail   0   2" /etc/fstab
+     sudo sed -i "$ a UUID=$VDB_UUID     /var/lib/docker xfs    defaults,nofail   0   2" /etc/fstab
 
-     sudo mount -a
-
+     sudo yum update -y
      sudo amazon-linux-extras install docker -y 
      sudo service docker start
      sudo systemctl enable docker
@@ -249,7 +257,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
 
      sudo sed -in 's/root\tALL=(ALL)/root\tALL=(ALL:ALL)/' /etc/sudoers
 
-     curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip -o greengrass-nucleus-latest.zip && 
+     curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip -o /home/ec2-user/greengrass-nucleus-latest.zip && cd /home/ec2-user &&
      unzip greengrass-nucleus-latest.zip -d GreengrassInstaller && 
      rm greengrass-nucleus-latest.zip
 
@@ -264,7 +272,6 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
        --component-default-user ggc_user:ggc_group \
        --provision true \
        --setup-system-service true
-       
        
      ```
 2. Create a VNI. 
