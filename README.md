@@ -180,7 +180,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
      
 ### (alternative Easy method)
-This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. 
+This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. This works on MacOS.
 
 
 1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Replace the following parameters appropriately.
@@ -195,6 +195,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
   
      ```
+     sleep 40
      export MANIFEST_URL="<presigned URL of manifest file>"
      export UNLOCK_CODE=<unlock_code>
      export SNOW_JOB_ID=<snow_job_id>
@@ -208,7 +209,7 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      export MANIFEST_FILE=/home/ec2-user/.aws/snowball/config/mymanifest.bin
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
      sudo sed -i '$ a interface "eth0" {supersede domain-name-servers 8.8.4.4, 8.8.8.8;}' /etc/dhcp/dhclient.conf 
-
+     
      curl -s https://snowball-client.s3.us-west-2.amazonaws.com/latest/snowball-client-linux.tar.gz -o /home/ec2-user/sbe-client.tar.gz && cd /home/ec2-user &&
      tar -xf sbe-client.tar.gz
      export SBE_CLI_PATH=/home/ec2-user/`tar tf sbe-client.tar.gz | head -n1`bin
