@@ -181,6 +181,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      
 ### (alternative Easy method)
 This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. This works on MacOS.
+Note: This stores your AWS credentials in the user-data. The user-data will be saved to /var/lib/cloud/instances/[instance-id]/user-data.txt. You may consider deleting this file once you have reviewed it.
 
 
 1. Save this userdata file to your computer. Call it AL2_IOT_userdata.txt. Replace the following parameters appropriately.
