@@ -195,7 +195,8 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
   
      ```
-     sleep 40
+     #!/bin/bash
+     sleep 60
      export MANIFEST_URL="<presigned URL of manifest file>"
      export UNLOCK_CODE=<unlock_code>
      export SNOW_JOB_ID=<snow_job_id>
