@@ -291,13 +291,13 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
        --setup-system-service true
        
      ```
-2. Create a VNI. 
+2. Create a VNI. In the example below, s.ni-81de3334a74d29280 is physical interface ID. Replace this value with the physical interface id of your Snow device.
      ```
-     export EC2_IP_ADDRESS=`snowballEdge create-virtual-network-interface --physical-network-interface-id s.ni-81de3334a74d29280 --ip-address-assignment DHCP --profile sbe89 | grep \"IpAddress\" | awk -F '"' '{print $4}'`
+     export EC2_IP_ADDRESS=`snowballEdge create-virtual-network-interface --physical-network-interface-id s.ni-81de3334a74d29280 --ip-address-assignment DHCP --profile <my_snow_profile> | grep \"IpAddress\" | awk -F '"' '{print $4}'`
      ```
-3. Launch your EC2 instance
+3. Launch your EC2 instance. In the example below, s.ami-8144e2b13711e662b is the image ID of the Amazon Linux 2 AMI on the Snow device. Replace this with your AMI ID on your Snow device. The instance type for a snowcone would be snc1.medium. The instance type for a snowball edge would be sbe-c.medium.
      ```
-     export INSTANCE_ID=`aws ec2 run-instances --image-id s.ami-8144e2b13711e662b --count 1 --instance-type sbe-c.medium --key-name markngykp --user-data file://AL2_IOT_userdata.txt --endpoint http://192.168.26.89:8008 --profile sbe89 --region snow | grep InstanceId | awk -F '"' '{print $4}'` &&
+     export INSTANCE_ID=`aws ec2 run-instances --image-id s.ami-8144e2b13711e662b --count 1 --instance-type snc1.medium --key-name markngykp --user-data file://AL2_IOT_userdata.txt --endpoint http://192.168.26.89:8008 --profile sbe89 --region snow | grep InstanceId | awk -F '"' '{print $4}'` &&
      sleep 60 &&
      aws ec2 associate-address --instance-id $INSTANCE_ID --public-ip $EC2_IP_ADDRESS --profile sbe89 --endpoint http://192.168.26.89:8008 --region snow
      ```
