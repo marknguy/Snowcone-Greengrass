@@ -216,21 +216,20 @@ This procedure automates the process of setting up a Snowcone as an IoT Greengra
      export SBE_CLI_PATH=/home/ec2-user/`tar tf sbe-client.tar.gz | head -n1`bin
 
      mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
-     cd /root
-     mkdir .aws .aws/snowball .aws/snowball/config .aws/snowball/logs
+     sudo mkdir /root/.aws /root/.aws/snowball /root/.aws/snowball/config /root/.aws/snowball/logs
 
      curl -s "$MANIFEST_URL" -o /home/ec2-user/.aws/snowball/config/mymanifest.bin
-     cp /home/ec2-user/.aws/snowball/config/mymanifest.bin /root/.aws/snowball/config/mymanifest.bin
+     sudo cp /home/ec2-user/.aws/snowball/config/mymanifest.bin /root/.aws/snowball/config/mymanifest.bin
 
      echo "{\"version\":1,\"profiles\":{\"snc89\":{\"name\":\"snc89\",\"jobId\":\"$SNOW_JOB_ID\",\"unlockCode\":\"$UNLOCK_CODE\",\"manifestPath\":\"/home/ec2-user/.aws/snowball/config/mymanifest.bin\",\"defaultEndpoint\":\"https://$SNOW_IP\"}}}" >> /home/ec2-user/.aws/snowball/config/snowball-edge.config
 
-     cp /home/ec2-user/.aws/snowball/config/snowball-edge.config /root/.aws/snowball/config/snowball-edge.config
+     sudo cp /home/ec2-user/.aws/snowball/config/snowball-edge.config /root/.aws/snowball/config/snowball-edge.config
 
      export SBE_ACCESS_KEY=`$SBE_CLI_PATH/snowballEdge list-access-keys --manifest-file $MANIFEST_FILE --unlock-code $UNLOCK_CODE --endpoint https://$SNOW_IP | grep AccessKeyIds | awk -F '"' '{print $4}'`
 
      $SBE_CLI_PATH/snowballEdge get-secret-access-key --access-key-id $SBE_ACCESS_KEY --manifest-file $MANIFEST_FILE --unlock-code $UNLOCK_CODE --endpoint https://$SNOW_IP >> /home/ec2-user/.aws/credentials
 
-     cp /home/ec2-user/.aws/credentials /root/.aws/credentials
+     sudo cp /home/ec2-user/.aws/credentials /root/.aws/credentials
 
      sudo chown -R ec2-user:ec2-user /home/ec2-user
 
