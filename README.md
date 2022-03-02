@@ -179,8 +179,46 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
        --setup-system-service true
      ```
      
+### Build docker image and save to S3
+1. Install git and clone this repository.
+     ```
+     sudo yum install git -y
+     git clone https://github.com/marknguy/Snowcone-Greengrass/
+     sudo usermod -aG docker ggc_user
+     ```
+2. Build the docker image and store it in the /greengrass volume
+     ```
+     cd ~/Snowcone-Greengrass/face_detection
+     sudo DOCKER_BUILDKIT=1 docker build -t face_detection .
+     sudo docker save -o /greengrass/face_detection.tar face_detection
+     sudo chmod 644 /greengrass/face_detection.tar
+     ```
+3. Upload docker image to S3. 
+     ```
+     aws s3 cp /greengrass/face_detection.tar s3://<my_S3_bucket>/
+     ```
+
+### Build docker image and save to S3
+1. Install git and clone this repository.
+     ```
+     sudo yum install git -y
+     git clone https://github.com/marknguy/Snowcone-Greengrass/
+     sudo usermod -aG docker ggc_user
+     ```
+2. Build the docker image and store it in the /greengrass volume
+     ```
+     cd ~/Snowcone-Greengrass/face_detection
+     sudo DOCKER_BUILDKIT=1 docker build -t face_detection .
+     sudo docker save -o /greengrass/face_detection.tar face_detection
+     sudo chmod 644 /greengrass/face_detection.tar
+     ```
+3. Upload docker image to S3. 
+     ```
+     aws s3 cp /greengrass/face_detection.tar s3://<my_S3_bucket>/
+     ```
+
 ### (alternative Easy method)
-This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device. This works on MacOS.
+This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device, building the docker image, creating the component, creating the deployment, and creating the webpage. Afterwards, you should be able to open a browser and see the demi This works on MacOS. 
 Note: This stores your AWS credentials in the user-data. The user-data will be saved to /var/lib/cloud/instances/[instance-id]/user-data.txt. You may consider deleting this file once you have reviewed it.
 
 
