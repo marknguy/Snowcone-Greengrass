@@ -199,7 +199,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
 
 ### Create the necessary IAM policy and associate it to a role
-1. Create a text filed called `component-artifact-policy.json` with the following contents. Use the name of your S3 bucket.
+1. Create a text filed called `component-artifact-policy.json` with the following contents. Use the name of your S3 bucket in place of `<my_S3_bucket>`.
      ```
      {
        "Version": "2012-10-17",
@@ -221,6 +221,51 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
 3. Attach your policy to the role, `GreengrassV2TokenExchangeRole`. The `<policy_arn>` is derived from the previous command.
      ```
      aws iam attach-role-policy --policy-arn <policy_arn> --role-name GreengrassV2TokenExchangeRole
+     ```
+
+### Create the component recipe
+1. Create a text filed called `com.example.FacialDetection.json` with the following contents. Use the name of your S3 bucket in place of `<my_S3_bucket>`. The mjpeg stream URL should go in `<MJPEG_STREAM_URL>`. Example: http://username:password@192.168.26.200/cgi-bin/mjpg/video.cgi?channel=1&subtype=1
+     ```
+     {
+       "RecipeFormatVersion": "2020-01-25",
+       "ComponentName": "com.example.FacialDetection",
+       "ComponentVersion": "1.0.0",
+       "ComponentType": "aws.greengrass.generic",
+       "ComponentDescription": "A component that runs a Docker container from an image in an S3 bucket.",
+       "ComponentPublisher": "Amazon",
+       "Manifests": [
+         {
+           "Platform": {
+             "os": "linux"
+           },
+           "Lifecycle": {
+             "Install": {
+               "Script": "docker load -i {artifacts:path}/face_detection.tar",
+               "Timeout": "600"
+             },
+             "Run": {
+               "Script": "docker run --rm --env PEOPLE_DETECTION_URL='<MJPEG_STREAM_URL>' --env LABELLED_STREAM_PORT=9000 -p 9000:9000 face_detection"
+             }
+           },
+           "Artifacts": [
+             {
+               "Uri": "s3://<my_S3_bucket>/face_detection.tar"
+             }
+           ]
+         }
+       ],
+       "Lifecycle": {}
+     }
+     ```
+2. Install the AWS CLI version 2 so we can use Greengrass V2.
+     ```
+     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+     unzip awscliv2.zip
+     sudo ./aws/install
+     ```
+3. Create the greengrass component. The `<aws_region>` is your region. Ex: us-east-1.
+     ```
+     /usr/local/bin/aws greengrassv2 create-component-version --inline-recipe fileb://com.example.FacialDetection.json --region <aws_regioni>
      ```
 
 ### (alternative Easy method)
