@@ -223,8 +223,8 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      aws iam attach-role-policy --policy-arn <policy_arn> --role-name GreengrassV2TokenExchangeRole
      ```
 
-### Create the component recipe
-1. Create a text filed called `com.example.FacialDetection.json` with the following contents. Use the name of your S3 bucket in place of `<my_S3_bucket>`. The mjpeg stream URL should go in `<MJPEG_STREAM_URL>`. Example: http://username:password@192.168.26.200/cgi-bin/mjpg/video.cgi?channel=1&subtype=1
+### Create the component
+1. Create a text filed called `com.example.FacialDetection.json` with the following contents. This is your component recipe. Use the name of your S3 bucket in place of `<my_S3_bucket>`. The mjpeg stream URL should go in `<MJPEG_STREAM_URL>`. Example: http://username:password@192.168.26.200/cgi-bin/mjpg/video.cgi?channel=1&subtype=1
      ```
      {
        "RecipeFormatVersion": "2020-01-25",
@@ -267,6 +267,54 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
      /usr/local/bin/aws greengrassv2 create-component-version --inline-recipe fileb://com.example.FacialDetection.json --region <aws_regioni>
      ```
+
+### Create the deployment
+1. Create a text filed called `deployment.json` with the following contents. Use your region and account ID for `<aws_region>` and `<aws_account_id>`, respectively. `<thing_group>` should be the name of your group of things, for example, `MyFaceDetectors`. `<deployment_name>` is a friendly name to call your deployment of this component to the group of IoT things.
+     ```
+     {
+       "targetArn": "arn:aws:iot:<aws_region>:<aws_account_id>:thinggroup/<thing_group>",
+       "deploymentName": "<deployment_name>",
+       "components": {
+         "com.example.FacialDetection": {
+           "componentVersion": "1.0.0",
+           "configurationUpdate": {}
+         }
+       },
+       "deploymentPolicies": {
+         "componentUpdatePolicy": {
+           "action": "NOTIFY_COMPONENTS",
+           "timeoutInSeconds": 30
+         },
+         "configurationValidationPolicy": {
+           "timeoutInSeconds": 60
+         },
+         "failureHandlingPolicy": "ROLLBACK"
+       }
+     }
+     ```
+2. Create the deployment using your deployment template.
+     ```
+     /usr/local/bin/aws greengrassv2 create-deployment --cli-input-json file://deployment.json
+     ```
+     
+### Setup the webserver
+1. Install apache.
+     ```
+     sudo yum install httpd -y
+     sudo systemctl start httpd.service
+     ```
+     
+2. Copy content over from the repository (already downloaded) and edit index.html to reflect the public IP address.
+     ```
+     sudo cp ~/Snowcone-Greengrass/html/* /var/www/html/
+     sudo cp ~/Snowcone-Greengrass/gg-architecture.jpg /var/www/html/
+
+     export PUBLIC_IP=`curl http://169.254.169.254/latest/meta-data/public-ipv4`
+     sudo sed -i 's/127.0.0.1/'"$PUBLIC_IP"'/g' /var/www/html/index.html
+     ```
+
+### You should now be able to go http://<IP_address_of_EC2_instance> and see your demo!!! :)
+
 
 ### (alternative Easy method)
 This procedure automates the process of setting up a Snowcone as an IoT Greengrass core device, building the docker image, creating the component, creating the deployment, and creating the webpage. Afterwards, you should be able to open a browser and see the demi This works on MacOS. 
