@@ -198,23 +198,29 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      aws s3 cp /greengrass/face_detection.tar s3://<my_S3_bucket>/
      ```
 
-### Build docker image and save to S3
-1. Install git and clone this repository.
+### Create the necessary IAM policy and associate it to a role
+1. Create a text filed called `component-artifact-policy.json` with the following contents. Use the name of your S3 bucket.
      ```
-     sudo yum install git -y
-     git clone https://github.com/marknguy/Snowcone-Greengrass/
-     sudo usermod -aG docker ggc_user
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Effect": "Allow",
+           "Action": [
+             "s3:GetObject"
+           ],
+           "Resource": "arn:aws:s3:::<my_S3_bucket>/*"
+         }
+       ]
+     }
      ```
-2. Build the docker image and store it in the /greengrass volume
+2. Use the following command to create the IAM policy using the JSON file you just created.
      ```
-     cd ~/Snowcone-Greengrass/face_detection
-     sudo DOCKER_BUILDKIT=1 docker build -t face_detection .
-     sudo docker save -o /greengrass/face_detection.tar face_detection
-     sudo chmod 644 /greengrass/face_detection.tar
+     aws iam create-policy --policy-name MyGreengrassV2ComponentArtifactPolicy --policy-document file://component-artifact-policy.json
      ```
-3. Upload docker image to S3. 
+3. Attach your policy to the role, `GreengrassV2TokenExchangeRole`. The `<policy_arn>` is derived from the previous command.
      ```
-     aws s3 cp /greengrass/face_detection.tar s3://<my_S3_bucket>/
+     aws iam attach-role-policy --policy-arn <policy_arn> --role-name GreengrassV2TokenExchangeRole
      ```
 
 ### (alternative Easy method)
