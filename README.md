@@ -191,7 +191,8 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      - `<ip_address_of_snow>` IP address of Snow device. Example: 192.168.26.89
      - `<aws_region>` AWS Region. Example: us-east-1.
      - `<iot_thing_name>` Thing name. Example: snowcone88.
-     - `<thing-group-name>` Thing group. Example: FaceDetectors.
+     - `<thing_group_name>` Thing group. Example: FaceDetectors.
+     - `<deployment-name>` Deployment name. Example: FaceDetector_on_Snow.
      - `<aws_access_key_id>` Access key ID from Region. Example: AKIA46OJAF6J4EXAMPLE
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
      - `<existing_s3_bucket_in_region>` S3 bucket for storing docker container build
@@ -206,7 +207,8 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      export SNOW_IP=<ip_address_of_snow>
      export AWS_REGION=<aws_region>
      export IOT_THING_NAME=<iot_thing_name>
-     export THING_GROUP=<thing-group-name>
+     export THING_GROUP=<thing_group_name>
+     export DEPLOYMENT_NAME=<deployment_name>
      export AWS_ACCESS_KEY_ID=<aws_access_key_id>
      export AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
      export S3_BUCKET=<existing_s3_bucket_in_region>
@@ -326,7 +328,7 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      
      export AWS_ACCOUNT_ID=$(echo $GG_S3_POLICY | sed -n -e 's/^arn:aws:iam::\([0-9]\+\).*/\1/p')
      
-     jq -n --arg AWS_REGION "$AWS_REGION" --arg AWS_ACCOUNT_ID "$AWS_ACCOUNT_ID" --arg THING_GROUP "$THING_GROUP" '{"targetArn": "arn:aws:iot:'"$AWS_REGION"':'"$AWS_ACCOUNT_ID"':thinggroup/'"$THING_GROUP"'","deploymentName":"FaceDetection_Snowcone","components": {"com.example.FacialDetection": { "componentVersion": "1.0.0","configurationUpdate": {}}},"deploymentPolicies": {"componentUpdatePolicy": { "action": "NOTIFY_COMPONENTS","timeoutInSeconds": 30},"configurationValidationPolicy": {"timeoutInSeconds": 60},"failureHandlingPolicy": "ROLLBACK"}}' > deployment.json
+     jq -n --arg AWS_REGION "$AWS_REGION" --arg AWS_ACCOUNT_ID "$AWS_ACCOUNT_ID" --arg THING_GROUP "$THING_GROUP" '{"targetArn": "arn:aws:iot:'"$AWS_REGION"':'"$AWS_ACCOUNT_ID"':thinggroup/'"$THING_GROUP"'","deploymentName":"'"$DEPLOYMENT_NAME"'","components": {"com.example.FacialDetection": { "componentVersion": "1.0.0","configurationUpdate": {}}},"deploymentPolicies": {"componentUpdatePolicy": { "action": "NOTIFY_COMPONENTS","timeoutInSeconds": 30},"configurationValidationPolicy": {"timeoutInSeconds": 60},"failureHandlingPolicy": "ROLLBACK"}}' > deployment.json
      
      /usr/local/bin/aws greengrassv2 create-deployment --cli-input-json file://deployment.json
 
