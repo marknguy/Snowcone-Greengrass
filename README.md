@@ -314,6 +314,7 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      cd
 
      jq -n --arg S3_BUCKET "$S3_BUCKET" '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetObject"],"Resource":"arn:aws:s3:::'"$S3_BUCKET"'/*"}]}' > component-artifact-policy.json
+     
      export GG_S3_POLICY=`aws iam create-policy --policy-name MyGreengrassV2ComponentArtifactPolicy --policy-document file://component-artifact-policy.json | grep Arn | awk -F '"' '{print $4}'`
      
      aws iam attach-role-policy --policy-arn $GG_S3_POLICY --role-name GreengrassV2TokenExchangeRole
@@ -336,7 +337,8 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      sudo cp ~/Snowcone-Greengrass/gg-architecture.jpg /var/www/html/
      
      export PUBLIC_IP=`curl http://169.254.169.254/latest/meta-data/public-ipv4`
-     sudo sed -i 's/127.0.0.1/'"$PUBLIC_IP"'/g' index.html
+     sudo sed -i 's/127.0.0.1/'"$PUBLIC_IP"'/g' /var/www/html/index.html
+     sudo systemctl start httpd.service
      
      ```
 2. Create a VNI. In the example below, s.ni-81de3334a74d29280 is physical interface ID. Replace this value with the physical interface id of your Snow device.
