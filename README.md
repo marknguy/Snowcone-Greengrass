@@ -194,6 +194,8 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      - `<thing-group-name>` Thing group. Example: FaceDetectors.
      - `<aws_access_key_id>` Access key ID from Region. Example: AKIA46OJAF6J4EXAMPLE
      - `<aws_secret_access_key>` Secret access key from Region. Example: 438BPatRMGohOiuCho9A6gGBLvEXAMPLE
+     - `<existing_s3_bucket_in_region>` S3 bucket for storing docker container build
+     - `<mjpeg_stream_url>` URL of the MJPEG stream. Example http://username:password@192.168.26.200/cgi-bin/mjpg/video.cgi?channel=1&subtype=1
   
      ```
      #!/bin/bash
@@ -207,6 +209,8 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      export THING_GROUP=<thing-group-name>
      export AWS_ACCESS_KEY_ID=<aws_access_key_id>
      export AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
+     export S3_BUCKET=<existing_s3_bucket_in_region>
+     export STREAM_URL="<mjpeg_stream_url>"
      
      export MANIFEST_FILE=/home/ec2-user/.aws/snowball/config/mymanifest.bin
      sudo sed -i 's/nameserver.*/nameserver 8.8.8.8/g' /etc/resolv.conf 
@@ -291,7 +295,42 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
        --component-default-user ggc_user:ggc_group \
        --provision true \
        --setup-system-service true
-       
+     
+     sudo usermod -aG docker ggc_user
+     sudo yum install git jq -y
+     git clone https://github.com/marknguy/Snowcone-Greengrass/
+     
+     cd face_detection
+
+     sudo DOCKER_BUILDKIT=1 docker build -t face_detection .
+     sudo docker save -o /greengrass/face_detection.tar face_detection
+     
+     sudo chmod 644 /greengrass/face_detection.tar
+
+     aws s3 cp /greengrass/face_detection.tar s3://$S3_BUCKET/
+     
+     cd
+
+     jq -n --arg S3_BUCKET "$S3_BUCKET" '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetObject"],"Resource":"arn:aws:s3:::'"$S3_BUCKET"'/*"}]}' > component-artifact-policy.json
+     export GG_S3_POLICY=`aws iam create-policy --policy-name MyGreengrassV2ComponentArtifactPolicy3 --policy-document file://component-artifact-policy.json | grep Arn | awk -F '"' '{print $4}'`
+     
+     aws iam attach-role-policy --policy-arn $GG_S3_POLICY --role-name GreengrassV2TokenExchangeRole
+     
+     jq -n --arg S3_BUCKET "$S3_BUCKET" --arg SCRIPT "docker run --rm --env PEOPLE_DETECTION_URL='$STREAM_URL' --env LABELLED_STREAM_PORT=9000 -p 9000:9000 face_detection_test" $'{"RecipeFormatVersion": "2020-01-25","ComponentName": "com.example.FacialDetection3","ComponentVersion":"1.0.1","ComponentType": "aws.greengrass.generic","ComponentDescription": "A component that runs a Docker container from an image in an S3 bucket.","ComponentPublisher": "Amazon","Manifests": [{"Platform": {"os": "linux"},"Lifecycle": {"Install": {"Script": "docker load -i {artifacts:path}/face_detection_test.tar","Timeout": "600"},"Run": {"Script": $SCRIPT}},"Artifacts": [{"Uri": "s3://'"$S3_BUCKET"'/face_detection_test.tar"}]}],"Lifecycle": {}}' > com.example.FacialDetection3.json
+     
+     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+     unzip awscliv2.zip
+     sudo ./aws/install
+
+     /usr/local/bin/aws greengrassv2 create-component-version --inline-recipe fileb://com.example.FacialDetection3.json --region $AWS_REGION
+     
+     export AWS_ACCOUNT_ID=$(echo $GG_S3_POLICY | sed -n -e 's/^arn:aws:iam::\([0-9]\+\).*/\1/p')
+     
+     jq -n --arg AWS_REGION "$AWS_REGION" --arg AWS_ACCOUNT_ID "$AWS_ACCOUNT_ID" --arg THING_GROUP "$THING_GROUP" '{"targetArn": "arn:aws:iot:'"$AWS_REGION"':'"$AWS_ACCOUNT_ID"':thinggroup/'"$THING_GROUP"'","deploymentName":"FaceDetection_Snowcone","components": {"com.example.FacialDetection3": { "componentVersion": "1.0.1","configurationUpdate": {}}},"deploymentPolicies": {"componentUpdatePolicy": { "action": "NOTIFY_COMPONENTS","timeoutInSeconds": 30},"configurationValidationPolicy": {"timeoutInSeconds": 60},"failureHandlingPolicy": "ROLLBACK"}}' > deployment.json
+     
+     /usr/local/bin/aws greengrassv2 create-deployment --cli-input-json file://deployment.json
+
+     
      ```
 2. Create a VNI. In the example below, s.ni-81de3334a74d29280 is physical interface ID. Replace this value with the physical interface id of your Snow device.
      ```
