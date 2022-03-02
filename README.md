@@ -313,7 +313,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      sudo sed -i 's/127.0.0.1/'"$PUBLIC_IP"'/g' /var/www/html/index.html
      ```
 
-### You should now be able to go http://<IP_address_of_EC2_instance> and see your demo!!! :)
+### You should now be able to go `http://<IP_address_of_EC2_instance>` and see your demo!!! :)
 
 
 ### (alternative Easy method)
