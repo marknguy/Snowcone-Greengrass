@@ -14,6 +14,7 @@ AWS IoT Greengrass allows you to build, deploy, and manage device software to th
 1. The Snowcone was ordered with the AWS IoT Greengrass validated AMI (amzn2-ami-snow-family-hvm-2.0.20210219.0-x86_64-gp2-b7e7f8d2-1b9e-4774-a374-120e0cd85d5a).
 2. Familar with OpsHub and the SnowballEdge client. Both are installed on the user's computer. 
 3. The SnowballEdge client has been configured with a profile using the appropriate Snowcone credentials.
+4. AWS cli v2 has been installed and configured.
 
 
 ### Snowcone setup
