@@ -295,7 +295,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
 2. Create the deployment using your deployment template.
      ```
-     /usr/local/bin/aws greengrassv2 create-deployment --cli-input-json file://deployment.json
+     /usr/local/bin/aws greengrassv2 create-deployment --cli-input-json file://deployment.json --region <region>
      ```
      
 ### Setup the webserver
