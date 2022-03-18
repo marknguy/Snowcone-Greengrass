@@ -303,6 +303,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
      sudo yum install httpd -y
      sudo systemctl start httpd.service
+     sudo systemctl enable httpd.service
      ```
      
 2. Copy content over from the repository (already downloaded) and edit index.html to reflect the public IP address.
@@ -477,6 +478,7 @@ Note: This stores your AWS credentials in the user-data. The user-data will be s
      export PUBLIC_IP=`curl http://169.254.169.254/latest/meta-data/public-ipv4`
      sudo sed -i 's/127.0.0.1/'"$PUBLIC_IP"'/g' /var/www/html/index.html
      sudo systemctl start httpd.service
+     sudo systemctl enable httpd.service
      
      ```
 2. Create a VNI. In the example below, s.ni-81de3334a74d29280 is physical interface ID. Replace this value with the physical interface id of your Snow device.
