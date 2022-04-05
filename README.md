@@ -266,7 +266,7 @@ This is from https://docs.aws.amazon.com/greengrass/v2/developerguide/quick-inst
      ```
 3. Create the greengrass component. The `<aws_region>` is your region. Ex: us-east-1.
      ```
-     /usr/local/bin/aws greengrassv2 create-component-version --inline-recipe fileb://com.example.FacialDetection.json --region <aws_regioni>
+     /usr/local/bin/aws greengrassv2 create-component-version --inline-recipe fileb://com.example.FacialDetection.json --region <aws_region>
      ```
 
 ### Create the deployment
