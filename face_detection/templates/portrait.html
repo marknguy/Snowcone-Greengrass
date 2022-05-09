@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <!--        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous"> -->
+        <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css')}}"
+            >
+        <title>AWS Live Video Demonstration</title>
+    </head>
+    <body>
+        <div class="container-fluid" style="color:#232f3e">
+            <div class="row" style="background-color:#232f3e"><br></div>
+            <div class="row" style="background-color:#232f3e">
+                <div class="col-md-4 text-right">
+                    <img src="{{url_for('static', filename='logo.png')}}" class="rounded" alt="aws logo" height="70px">
+                </div>
+                <div class="col-md-8 text-white text-left">
+                    <h2 class="display-4">Computer Vision at the Edge</h2>
+                </div>
+            </div>
+            <div class="row" style="background-color:#232f3e"><br></div>
+            <div class="row"><br></div>
+            <div class="row text-center">
+                <div class="col-md-7" style="padding: 10px;">
+                    <h1 class="display-6">Edge to Cloud Notional Architecture</h2>
+                    <img src="{{url_for('static', filename='gg-architecture.jpg')}}" width="100%"/>
+                </div>
+            </div>
+            <div class="row text-center">
+               <div class="col-md-7" style="padding: 20px;">
+                        <!--            <img src="http://192.168.26.87:9000/?action=stream" width="100%">  -->
+                    <h1 class="display-6">Live Detection on AWS Snowcone</h2>
+		    <br>
+                    <img src="{{ url_for('video_feed') }}" width="100%">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

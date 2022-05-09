@@ -15,6 +15,7 @@ RUN apt-get install python3-dev libopencv-dev python3-opencv libatlas-base-dev -
 RUN apt install libopencv-dev python3-opencv
 
 COPY templates ./templates
+COPY static ./static
 COPY videoapp.py ./videoapp.py
 COPY videoapp.ini ./videoapp.ini
 

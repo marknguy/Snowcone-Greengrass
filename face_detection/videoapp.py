@@ -16,8 +16,8 @@ class VideoStream:
         self.stream = cv2.VideoCapture(stream_url)
         while not self.stream.isOpened():
             self.stream = cv2.VideoCapture(stream_url)
-            time.sleep(30)
-            print("Unable to open stream.  Waiting for 30 seconds...")
+            time.sleep(10)
+            print("Unable to open stream - {}  Waiting for 10 seconds...".format(str(stream_url)))
             #raise Exception("Could not open video stream")
         # ret = self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         ret = self.stream.set(3,resolution[0])
@@ -129,10 +129,18 @@ def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
+@app.route('/portrait')
+def portrait():
+    """Video streaming home page. Portrait"""
+    return render_template('portrait.html')
+
+
 @app.route('/')
 def index():
     """Video streaming home page."""
-    return render_template('index.html')
+    return render_template('landscape.html')
+
 
 
 if __name__ == '__main__':
