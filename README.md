@@ -137,7 +137,7 @@ AWS IoT Greengrass allows you to build, deploy, and manage device software to th
      sudo service docker start
      sudo systemctl enable docker
      ```
-12. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnessary GUI components.
+12. Install the Java runtime. We use the Amazon Corretto headless version because it includes bug fixes and omits unnecessary GUI components.
      ```
      sudo yum install java-11-amazon-corretto-headless -y
      ```
